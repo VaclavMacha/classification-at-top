@@ -35,7 +35,7 @@ def to_torch(x: ArrayLike, device: Device | None = None) -> torch.Tensor:
 
     Args:
         x (ArrayLike): The input array-like object.
-        device (torch.device): The device to push the tensor to. Defaults to None
+        device (Device): The device to push the tensor to. Defaults to None
 
     Returns:
         torch.Tensor: The resulting tensor located on the given device.
