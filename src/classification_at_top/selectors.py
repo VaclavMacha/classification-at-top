@@ -5,7 +5,6 @@ import numpy as np
 from attrs import define, field
 
 
-@define(frozen=True)
 class AbstractSelector(ABC):
     @abstractmethod
     def indices(self, y: np.ndarray) -> np.ndarray:

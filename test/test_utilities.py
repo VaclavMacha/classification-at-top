@@ -32,3 +32,16 @@ def test_to_numpy(x, expected):
 def test_to_torch(device, x, expected):
     actual = to_torch(x, device=device)
     assert torch.equal(expected, actual)
+
+
+@pytest.mark.parametrize(
+    "x, k, reverse, expected",
+    [
+        *[(np.array(range(1, 11)), k, False, (k + 1, k)) for k in range(10)],
+        *[(np.array(range(1, 11)), k, True, (10 - k, 9 - k)) for k in range(10)],
+    ],
+)
+def test_find_kth(x, k, reverse, expected):
+    actual = find_kth(x, k, reverse)
+    assert actual == expected
+

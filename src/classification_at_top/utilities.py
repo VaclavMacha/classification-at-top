@@ -5,6 +5,7 @@ import torch
 
 ArrayLike = Union[np.ndarray, torch.Tensor, Iterable]
 Device = Union[str, torch.device]
+Number = Union[int, float]
 
 
 def to_numpy(x: ArrayLike) -> np.ndarray:
@@ -47,3 +48,29 @@ def to_torch(x: ArrayLike, device: Device | None = None) -> torch.Tensor:
         raise ValueError(f"Invalid input type. Expected {ArrayLike}")
 
     return torch.tensor(x).to(device)
+
+
+def find_kth(x: np.ndarray, k: int, reverse: bool = False) -> Tuple[Number, int]:
+    """
+    Finds the k-th smallest or largest element in an array.
+
+    Args:
+        x (np.ndarray): The input array.
+        k (int): The index of the element to find.
+        reverse (bool): If True, finds the k-th largest element. If False, finds the k-th smallest element. Defaults to False.
+
+    Returns:
+        Tuple[Number, int]: A tuple containing the k-th element and its index.
+
+    Raises:
+        ValueError: If k is out of range.
+    """
+    if k < 0 or k >= x.size:
+        raise ValueError(f"Invalid k. Expected 0 <= k < {x.size}, but got {k}")
+
+    if reverse:
+        ind = np.argpartition(-x, k)[k]
+    else:
+        ind = np.argpartition(x, k)[k]
+    return x[ind], ind
+
