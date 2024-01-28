@@ -124,10 +124,6 @@ def find_quantile(x: np.ndarray, tau: float, top: bool = False) -> Tuple[Number,
     if 0 > tau or tau > 1:
         raise ValueError(f"Invalid quantile. Expected 0 <= tau <= 1, but got {tau}")
 
-    n = x.size - 1
-    k = n - int(tau * n) if top else int(tau * n)
-
-    if k <= n / 2:
-        return find_kth(x, k, reverse=False)
-    else:
-        return find_kth(x, n - k, reverse=True)
+    t = np.quantile(x, 1 - tau if top else tau)
+    ind = (np.abs(x - t)).argmin()
+    return x[ind], ind

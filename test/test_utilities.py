@@ -59,9 +59,15 @@ def test_to_torch(device, x, expected):
         (range(1, 11), 9, True, (1, 0)),
     ],
 )
-def test_find_kth(x, k, reverse, expected):
-    actual = find_kth(to_numpy(x), k, reverse)
-    assert actual == expected
+class TestFindKth:
+    def test_expected(self, x, k, reverse, expected):
+        actual = find_kth(to_numpy(x), k, reverse)
+        assert actual == expected
+
+    def test_negation(self, x, k, reverse, expected):
+        t1 = find_kth(to_numpy(x), k, reverse)
+        t2 = find_kth(to_numpy(x), len(x) - k - 1, not reverse)
+        assert t1 == t2
 
 
 @pytest.mark.parametrize(
@@ -92,14 +98,11 @@ def test_find_kth(x, k, reverse, expected):
     ],
 )
 class TestFindQuantile:
-    def test_against_expected(self, x, tau, top, expected):
+    def test_expected(self, x, tau, top, expected):
         actual = find_quantile(to_numpy(x), tau, top)
         assert actual == expected
 
-    def test_against_numpy(self, x, tau, top, expected):
-        actual = find_quantile(to_numpy(x), tau, top)
-        if top:
-            expected = np.quantile(x, 1 - tau, interpolation="nearest")
-        else:
-            expected = np.quantile(x, tau, interpolation="nearest")
-        assert actual[0] == expected
+    def test_negation(self, x, tau, top, expected):
+        t1 = find_quantile(to_numpy(x), tau, top)
+        t2 = find_quantile(to_numpy(x), 1 - tau, not top)
+        assert t1 == t2
