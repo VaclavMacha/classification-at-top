@@ -88,6 +88,7 @@ def test_find_kth(x, k, reverse, expected):
         (range(1, 12), 0.7, True, (4, 3)),
         (range(1, 12), 0.8, True, (3, 2)),
         (range(1, 12), 0.9, True, (2, 1)),
+        (range(1, 12), 1.0, True, (1, 0)),
     ],
 )
 class TestFindQuantile:
