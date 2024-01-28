@@ -18,7 +18,7 @@ from .utilities import (
 )
 
 
-class AbstractThreshold(ABC):
+class AbstractThresholdType(ABC):
     """
     Abstract class representing a classification threshold.
     """
@@ -39,7 +39,7 @@ class AbstractThreshold(ABC):
 
 
 @define(frozen=True)
-class Maximum(AbstractThreshold):
+class Maximum(AbstractThresholdType):
     """
     A class representing a classification threshold equal to the maximum sample.
 
@@ -72,7 +72,7 @@ class Maximum(AbstractThreshold):
 
 
 @define(frozen=True)
-class Minimum(AbstractThreshold):
+class Minimum(AbstractThresholdType):
     """
     A class representing a classification threshold equal to the minimum sample.
 
@@ -105,7 +105,7 @@ class Minimum(AbstractThreshold):
 
 
 @define(frozen=True)
-class Kth(AbstractThreshold):
+class Kth(AbstractThresholdType):
     """
     A class representing a classification threshold equal to the k-th largest/smallest
     sample.
@@ -149,7 +149,7 @@ class Kth(AbstractThreshold):
 
 
 @define(frozen=True)
-class Quantile(AbstractThreshold):
+class Quantile(AbstractThresholdType):
     """
     A class representing a classification threshold equal to the top/bottom quantile.
 
