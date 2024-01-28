@@ -81,12 +81,13 @@ def find_minimum(x: np.ndarray) -> Tuple[Number, int]:
 
 def find_kth(x: np.ndarray, k: int, reverse: bool = False) -> Tuple[Number, int]:
     """
-    Finds the k-th smallest or largest element in an array.
+    Finds the k-th smallest or largest element and its index in the given array.
 
     Args:
         x (np.ndarray): The input array.
         k (int): The index of the element to find.
-        reverse (bool): If True, finds the k-th largest element. If False, finds the k-th smallest element. Defaults to False.
+        reverse (bool): If True, finds the k-th largest element. If False, finds the k-th
+            smallest element. Defaults to False.
 
     Returns:
         Tuple[Number, int]: A tuple containing the k-th element and its index.
@@ -104,26 +105,27 @@ def find_kth(x: np.ndarray, k: int, reverse: bool = False) -> Tuple[Number, int]
     return x[ind], ind
 
 
-def find_quantile(x: np.ndarray, q: float, top: bool = False) -> Tuple[Number, int]:
+def find_quantile(x: np.ndarray, tau: float, top: bool = False) -> Tuple[Number, int]:
     """
-    Finds the quantile of an array.
+    Finds the tau-quantile and its index of the given array.
 
     Args:
         x (np.ndarray): The input array.
-        q (float): The quantile value between 0 and 1.
-        top (bool): If True, finds the quantile from the top of the sorted array. If False, finds the quantile from the bottom. Defaults to False.
+        tau (float): The quantile value between 0 and 1.
+        top (bool): If True, finds the quantile from the top of the array. If False, finds
+            the quantile from the bottom. Defaults to False.
 
     Returns:
         Tuple[Number, int]: A tuple containing the quantile value and its index.
 
     Raises:
-        ValueError: If q is out of range.
+        ValueError: If tau is out of range.
     """
-    if 0 > q or q > 1:
-        raise ValueError(f"Invalid quantile. Expected 0 <= q <= 1, but got {q}")
+    if 0 > tau or tau > 1:
+        raise ValueError(f"Invalid quantile. Expected 0 <= tau <= 1, but got {tau}")
 
     n = x.size - 1
-    k = n - int(q * n) if top else int(q * n)
+    k = n - int(tau * n) if top else int(tau * n)
 
     if k <= n / 2:
         return find_kth(x, k, reverse=False)

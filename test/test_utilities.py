@@ -65,7 +65,7 @@ def test_find_kth(x, k, reverse, expected):
 
 
 @pytest.mark.parametrize(
-    "x, q, top, expected",
+    "x, tau, top, expected",
     [
         (range(1, 12), 0.0, False, (1, 0)),
         (range(1, 12), 0.1, False, (2, 1)),
@@ -92,14 +92,14 @@ def test_find_kth(x, k, reverse, expected):
     ],
 )
 class TestFindQuantile:
-    def test_against_expected(self, x, q, top, expected):
-        actual = find_quantile(to_numpy(x), q, top)
+    def test_against_expected(self, x, tau, top, expected):
+        actual = find_quantile(to_numpy(x), tau, top)
         assert actual == expected
 
-    def test_against_numpy(self, x, q, top, expected):
-        actual = find_quantile(to_numpy(x), q, top)
+    def test_against_numpy(self, x, tau, top, expected):
+        actual = find_quantile(to_numpy(x), tau, top)
         if top:
-            expected = np.quantile(x, 1 - q, interpolation="nearest")
+            expected = np.quantile(x, 1 - tau, interpolation="nearest")
         else:
-            expected = np.quantile(x, q, interpolation="nearest")
+            expected = np.quantile(x, tau, interpolation="nearest")
         assert actual[0] == expected
