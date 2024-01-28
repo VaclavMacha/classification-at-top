@@ -24,7 +24,7 @@ class AbstractThreshold(ABC):
     """
 
     @abstractmethod
-    def find_threshold(self, y: ArrayLike, s: ArrayLike) -> Tuple[Number, int]:
+    def find(self, y: ArrayLike, s: ArrayLike) -> Tuple[Number, int]:
         """
         Finds the threshold and its index in the given array of scores `s`. This method must be implemented by subclasses.
 
@@ -53,7 +53,7 @@ class Maximum(AbstractThreshold):
         validator=validators.instance_of(AbstractSelector),
     )
 
-    def find_threshold(self, y: ArrayLike, s: ArrayLike) -> Tuple[Number, int]:
+    def find(self, y: ArrayLike, s: ArrayLike) -> Tuple[Number, int]:
         """
         Finds the maximum and its index from in given array of scores `s`.
         Only scores selected by the selector are considered.
@@ -86,7 +86,7 @@ class Minimum(AbstractThreshold):
         validator=validators.instance_of(AbstractSelector),
     )
 
-    def find_threshold(self, y: ArrayLike, s: ArrayLike) -> Tuple[Number, int]:
+    def find(self, y: ArrayLike, s: ArrayLike) -> Tuple[Number, int]:
         """
         Finds the minimum and its index in the given array of scores `s`.
         Only scores selected by the selector are considered.
@@ -131,7 +131,7 @@ class Kth(AbstractThreshold):
         validator=validators.instance_of(AbstractSelector),
     )
 
-    def find_threshold(self, y: ArrayLike, s: ArrayLike) -> Tuple[Number, int]:
+    def find(self, y: ArrayLike, s: ArrayLike) -> Tuple[Number, int]:
         """
         Finds the k-th largest/smallest sample and its index from in given array of scores
         `s`. Only scores selected by the selector are considered.
@@ -173,7 +173,7 @@ class Quantile(AbstractThreshold):
         validator=validators.instance_of(AbstractSelector),
     )
 
-    def find_threshold(self, y: ArrayLike, s: ArrayLike) -> Tuple[Number, int]:
+    def find(self, y: ArrayLike, s: ArrayLike) -> Tuple[Number, int]:
         """
         Finds the top/bottom tau-quantile and its index from in given array of scores
         `s`. Only scores selected by the selector are considered.

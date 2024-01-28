@@ -37,14 +37,14 @@ class TestMaximum:
         fix = request.getfixturevalue("scores_dict")
         threshold = Maximum(selector=selector)
 
-        actual = threshold.find_threshold(fix["labels"], fix["scores"])
+        actual = threshold.find(fix["labels"], fix["scores"])
         assert actual == expected
 
     def test_value(self, selector, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
         threshold = Maximum(selector=selector)
 
-        actual = threshold.find_threshold(fix["labels"], fix["scores"])
+        actual = threshold.find(fix["labels"], fix["scores"])
         assert actual[0] == find_maximum(to_numpy(fix[key]))[0]
 
     def test_kth(self, selector, key, expected, request):
@@ -52,8 +52,8 @@ class TestMaximum:
         threshold1 = Maximum(selector=selector)
         threshold2 = Kth(k=0, reverse=True, selector=selector)
 
-        t1 = threshold1.find_threshold(fix["labels"], fix["scores"])
-        t2 = threshold2.find_threshold(fix["labels"], fix["scores"])
+        t1 = threshold1.find(fix["labels"], fix["scores"])
+        t2 = threshold2.find(fix["labels"], fix["scores"])
         assert t1 == t2
 
 
@@ -74,14 +74,14 @@ class TestMinimum:
         fix = request.getfixturevalue("scores_dict")
         threshold = Minimum(selector=selector)
 
-        actual = threshold.find_threshold(fix["labels"], fix["scores"])
+        actual = threshold.find(fix["labels"], fix["scores"])
         assert actual == expected
 
     def test_value(self, selector, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
         threshold = Minimum(selector=selector)
 
-        actual = threshold.find_threshold(fix["labels"], fix["scores"])
+        actual = threshold.find(fix["labels"], fix["scores"])
         assert actual[0] == find_minimum(to_numpy(fix[key]))[0]
 
     def test_kth(self, selector, key, expected, request):
@@ -89,8 +89,8 @@ class TestMinimum:
         threshold1 = Minimum(selector=selector)
         threshold2 = Kth(k=0, reverse=False, selector=selector)
 
-        t1 = threshold1.find_threshold(fix["labels"], fix["scores"])
-        t2 = threshold2.find_threshold(fix["labels"], fix["scores"])
+        t1 = threshold1.find(fix["labels"], fix["scores"])
+        t2 = threshold2.find(fix["labels"], fix["scores"])
         assert t1 == t2
 
 
@@ -118,14 +118,14 @@ class TestKth:
         fix = request.getfixturevalue("scores_dict")
         threshold = Kth(k=k, reverse=rev, selector=selector)
 
-        actual = threshold.find_threshold(fix["labels"], fix["scores"])
+        actual = threshold.find(fix["labels"], fix["scores"])
         assert actual == expected
 
     def test_value(self, selector, k, rev, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
         threshold = Kth(k=k, reverse=rev, selector=selector)
 
-        actual = threshold.find_threshold(fix["labels"], fix["scores"])
+        actual = threshold.find(fix["labels"], fix["scores"])
         assert actual[0] == find_kth(to_numpy(fix[key]), k, rev)[0]
 
 
@@ -153,14 +153,14 @@ class TestQuantile:
         fix = request.getfixturevalue("scores_dict")
         threshold = Quantile(tau=tau, top=top, selector=selector)
 
-        actual = threshold.find_threshold(fix["labels"], fix["scores"])
+        actual = threshold.find(fix["labels"], fix["scores"])
         assert actual == expected
 
     def test_value(self, selector, tau, top, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
         threshold = Quantile(tau=tau, top=top, selector=selector)
 
-        actual = threshold.find_threshold(fix["labels"], fix["scores"])
+        actual = threshold.find(fix["labels"], fix["scores"])
         assert actual[0] == find_quantile(to_numpy(fix[key]), tau, top)[0]
 
     def test_negation(self, selector, tau, top, key, expected, request):
@@ -168,6 +168,6 @@ class TestQuantile:
         threshold1 = Quantile(tau=tau, top=top, selector=selector)
         threshold2 = Quantile(tau=1 - tau, top=not top, selector=selector)
 
-        t1 = threshold1.find_threshold(fix["labels"], fix["scores"])
-        t2 = threshold2.find_threshold(fix["labels"], fix["scores"])
+        t1 = threshold1.find(fix["labels"], fix["scores"])
+        t2 = threshold2.find(fix["labels"], fix["scores"])
         assert t1 == t2
