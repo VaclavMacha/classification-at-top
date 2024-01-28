@@ -50,6 +50,35 @@ def to_torch(x: ArrayLike, device: Device | None = None) -> torch.Tensor:
     return torch.tensor(x).to(device)
 
 
+def find_maximum(x: np.ndarray) -> Tuple[Number, int]:
+    """
+    Finds the maximum value and its index in the given array.
+
+    Args:
+        x (np.ndarray): The input array.
+
+    Returns:
+        Tuple[Number, int]: A tuple containing the maximum value and its index.
+    """
+    ind = np.argmax(x)
+    return x[ind], ind
+
+
+def find_minimum(x: np.ndarray) -> Tuple[Number, int]:
+    """
+    Finds the minimum value and its index in the given array.
+
+    Args:
+        x (np.ndarray): The input array.
+
+    Returns:
+        Tuple[Number, int]: A tuple containing the minimum value and its index.
+
+    """
+    ind = np.argmin(x)
+    return x[ind], ind
+
+
 def find_kth(x: np.ndarray, k: int, reverse: bool = False) -> Tuple[Number, int]:
     """
     Finds the k-th smallest or largest element in an array.
