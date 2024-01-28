@@ -5,7 +5,7 @@ from classification_at_top.utilities import to_numpy
 
 
 @pytest.mark.parametrize(
-    "selector,y,s,inds",
+    "selector, y, s, inds",
     [
         (All(), [1, 1, 0, 1, 0], [1, 2, 3, 4, 5], [0, 1, 2, 3, 4]),
         (Negatives(), [1, 1, 0, 1, 0], [1, 2, 3, 4, 5], [2, 4]),

@@ -1,4 +1,4 @@
-from typing import Iterable, Union
+from typing import Iterable, Tuple, Union
 
 import numpy as np
 import torch
@@ -65,7 +65,7 @@ def find_kth(x: np.ndarray, k: int, reverse: bool = False) -> Tuple[Number, int]
     Raises:
         ValueError: If k is out of range.
     """
-    if k < 0 or k >= x.size:
+    if k < 0 or k > x.size:
         raise ValueError(f"Invalid k. Expected 0 <= k < {x.size}, but got {k}")
 
     if reverse:
@@ -74,3 +74,29 @@ def find_kth(x: np.ndarray, k: int, reverse: bool = False) -> Tuple[Number, int]
         ind = np.argpartition(x, k)[k]
     return x[ind], ind
 
+
+def find_quantile(x: np.ndarray, q: float, top: bool = False) -> Tuple[Number, int]:
+    """
+    Finds the quantile of an array.
+
+    Args:
+        x (np.ndarray): The input array.
+        q (float): The quantile value between 0 and 1.
+        top (bool): If True, finds the quantile from the top of the sorted array. If False, finds the quantile from the bottom. Defaults to False.
+
+    Returns:
+        Tuple[Number, int]: A tuple containing the quantile value and its index.
+
+    Raises:
+        ValueError: If q is out of range.
+    """
+    if 0 > q or q > 1:
+        raise ValueError(f"Invalid quantile. Expected 0 <= q <= 1, but got {q}")
+
+    n = x.size - 1
+    k = n - int(q * n) if top else int(q * n)
+
+    if k <= n / 2:
+        return find_kth(x, k, reverse=False)
+    else:
+        return find_kth(x, n - k, reverse=True)
