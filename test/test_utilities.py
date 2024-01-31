@@ -1,7 +1,12 @@
 import numpy as np
 import pytest
 import torch
-from classification_at_top.utilities import find_kth, find_quantile, to_numpy, to_torch
+from classification_at_top.utilities import (
+    find_extrema,
+    find_kth,
+    find_quantile,
+    to_numpy,
+)
 
 
 @pytest.mark.parametrize(
@@ -19,19 +24,21 @@ def test_to_numpy(x, expected):
 
 
 @pytest.mark.parametrize(
-    "device, x, expected",
+    "x, reverse, expected",
     [
-        ("cpu", [1, 2, 3], torch.tensor([1, 2, 3], device="cpu")),
-        ("cpu", (1, 2, 3), torch.tensor([1, 2, 3], device="cpu")),
-        ("cpu", torch.tensor([1, 2, 3]), torch.tensor([1, 2, 3], device="cpu")),
-        (None, [1, 2, 3], torch.tensor([1, 2, 3], device="cpu")),
-        (None, (1, 2, 3), torch.tensor([1, 2, 3], device="cpu")),
-        (None, torch.tensor([1, 2, 3]), torch.tensor([1, 2, 3], device="cpu")),
+        (range(1, 11), False, (1, 0)),
+        (range(1, 11), True, (10, 9)),
     ],
 )
-def test_to_torch(device, x, expected):
-    actual = to_torch(x, device=device)
-    assert torch.equal(expected, actual)
+class TestExtrema:
+    def test_expected(self, x, reverse, expected):
+        actual = find_extrema(to_numpy(x), reverse)
+        assert actual == expected
+
+    def test_kth(self, x, reverse, expected):
+        t1 = find_extrema(to_numpy(x), reverse)
+        t2 = find_kth(to_numpy(x), 0, reverse)
+        assert t1 == t2
 
 
 @pytest.mark.parametrize(

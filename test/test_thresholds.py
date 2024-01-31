@@ -1,10 +1,8 @@
 import pytest
-from classification_at_top.selectors import All, Negatives, Positives
-from classification_at_top.thresholds import Kth, Maximum, Minimum, Quantile
+from classification_at_top.thresholds import _find_threshold
 from classification_at_top.utilities import (
+    find_extrema,
     find_kth,
-    find_maximum,
-    find_minimum,
     find_quantile,
     to_numpy,
 )
@@ -21,153 +19,121 @@ def scores_dict() -> dict:
 
 
 @pytest.mark.parametrize(
-    "selector, key, expected",
+    "by, reverse, key, expected",
     [
-        (All(), "scores", (10, 9)),
-        (Negatives(), "scores_neg", (10, 9)),
-        (Negatives(0), "scores_neg", (10, 9)),
-        (Negatives(1), "scores_pos", (9, 8)),
-        (Positives(), "scores_pos", (9, 8)),
-        (Positives(1), "scores_pos", (9, 8)),
-        (Positives(0), "scores_neg", (10, 9)),
+        (None, False, "scores", (1, 0)),
+        (0, False, "scores_neg", (3, 2)),
+        (1, False, "scores_pos", (1, 0)),
+        (None, True, "scores", (10, 9)),
+        (0, True, "scores_neg", (10, 9)),
+        (1, True, "scores_pos", (9, 8)),
     ],
 )
-class TestMaximum:
-    def test_expected(self, selector, key, expected, request):
+class TestExtrema:
+    def test_expected(self, by, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        threshold = Maximum(selector=selector)
+        y = to_numpy(fix["labels"])
+        s = to_numpy(fix["scores"])
 
-        actual = threshold.find(fix["labels"], fix["scores"])
+        actual = _find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
         assert actual == expected
 
-    def test_value(self, selector, key, expected, request):
+    def test_value(self, by, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        threshold = Maximum(selector=selector)
+        y = to_numpy(fix["labels"])
+        s = to_numpy(fix["scores"])
+        s_selected = to_numpy(fix[key])
 
-        actual = threshold.find(fix["labels"], fix["scores"])
-        assert actual[0] == find_maximum(to_numpy(fix[key]))[0]
+        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)[0]
+        t2 = find_extrema(x=s_selected, reverse=reverse)[0]
+        assert t1 == t2
 
-    def test_kth(self, selector, key, expected, request):
+    def test_kth(self, by, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        threshold1 = Maximum(selector=selector)
-        threshold2 = Kth(k=0, reverse=True, selector=selector)
+        y = to_numpy(fix["labels"])
+        s = to_numpy(fix["scores"])
 
-        t1 = threshold1.find(fix["labels"], fix["scores"])
-        t2 = threshold2.find(fix["labels"], fix["scores"])
+        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
+        t2 = _find_threshold(y=y, s=s, by=by, k_or_tau=0, reverse=reverse)
         assert t1 == t2
 
 
 @pytest.mark.parametrize(
-    "selector, key, expected",
+    "by, k, reverse, key, expected",
     [
-        (All(), "scores", (1, 0)),
-        (Negatives(), "scores_neg", (3, 2)),
-        (Negatives(0), "scores_neg", (3, 2)),
-        (Negatives(1), "scores_pos", (1, 0)),
-        (Positives(), "scores_pos", (1, 0)),
-        (Positives(1), "scores_pos", (1, 0)),
-        (Positives(0), "scores_neg", (3, 2)),
-    ],
-)
-class TestMinimum:
-    def test_expected(self, selector, key, expected, request):
-        fix = request.getfixturevalue("scores_dict")
-        threshold = Minimum(selector=selector)
-
-        actual = threshold.find(fix["labels"], fix["scores"])
-        assert actual == expected
-
-    def test_value(self, selector, key, expected, request):
-        fix = request.getfixturevalue("scores_dict")
-        threshold = Minimum(selector=selector)
-
-        actual = threshold.find(fix["labels"], fix["scores"])
-        assert actual[0] == find_minimum(to_numpy(fix[key]))[0]
-
-    def test_kth(self, selector, key, expected, request):
-        fix = request.getfixturevalue("scores_dict")
-        threshold1 = Minimum(selector=selector)
-        threshold2 = Kth(k=0, reverse=False, selector=selector)
-
-        t1 = threshold1.find(fix["labels"], fix["scores"])
-        t2 = threshold2.find(fix["labels"], fix["scores"])
-        assert t1 == t2
-
-
-@pytest.mark.parametrize(
-    "selector, k, rev, key, expected",
-    [
-        (All(), 1, False, "scores", (2, 1)),
-        (Negatives(), 1, False, "scores_neg", (5, 4)),
-        (Negatives(0), 1, False, "scores_neg", (5, 4)),
-        (Negatives(1), 1, False, "scores_pos", (2, 1)),
-        (Positives(), 1, False, "scores_pos", (2, 1)),
-        (Positives(1), 1, False, "scores_pos", (2, 1)),
-        (Positives(0), 1, False, "scores_neg", (5, 4)),
-        (All(), 1, True, "scores", (9, 8)),
-        (Negatives(), 1, True, "scores_neg", (8, 7)),
-        (Negatives(0), 1, True, "scores_neg", (8, 7)),
-        (Negatives(1), 1, True, "scores_pos", (6, 5)),
-        (Positives(), 1, True, "scores_pos", (6, 5)),
-        (Positives(1), 1, True, "scores_pos", (6, 5)),
-        (Positives(0), 1, True, "scores_neg", (8, 7)),
+        (None, 1, False, "scores", (2, 1)),
+        (0, 1, False, "scores_neg", (5, 4)),
+        (1, 1, False, "scores_pos", (2, 1)),
+        (None, 1, True, "scores", (9, 8)),
+        (0, 1, True, "scores_neg", (8, 7)),
+        (1, 1, True, "scores_pos", (6, 5)),
     ],
 )
 class TestKth:
-    def test_expected(self, selector, k, rev, key, expected, request):
+    def test_expected(self, by, k, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        threshold = Kth(k=k, reverse=rev, selector=selector)
+        y = to_numpy(fix["labels"])
+        s = to_numpy(fix["scores"])
 
-        actual = threshold.find(fix["labels"], fix["scores"])
+        actual = _find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
         assert actual == expected
 
-    def test_value(self, selector, k, rev, key, expected, request):
+    def test_value(self, by, k, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        threshold = Kth(k=k, reverse=rev, selector=selector)
+        y = to_numpy(fix["labels"])
+        s = to_numpy(fix["scores"])
+        s_selected = to_numpy(fix[key])
 
-        actual = threshold.find(fix["labels"], fix["scores"])
-        assert actual[0] == find_kth(to_numpy(fix[key]), k, rev)[0]
+        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)[0]
+        t2 = find_kth(x=s_selected, k=k, reverse=reverse)[0]
+        assert t1 == t2
+
+    def test_negation(self, by, k, reverse, key, expected, request):
+        fix = request.getfixturevalue("scores_dict")
+        y = to_numpy(fix["labels"])
+        s = to_numpy(fix["scores"])
+        n = len(fix[key])
+
+        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
+        t2 = _find_threshold(y=y, s=s, by=by, k_or_tau=n - k - 1, reverse=not reverse)
+        assert t1 == t2
 
 
 @pytest.mark.parametrize(
-    "selector, tau, top, key, expected",
+    "by, tau, reverse, key, expected",
     [
-        (All(), 0.8, False, "scores", (8, 7)),
-        (Negatives(), 0.8, False, "scores_neg", (8, 7)),
-        (Negatives(0), 0.8, False, "scores_neg", (8, 7)),
-        (Negatives(1), 0.8, False, "scores_pos", (6, 5)),
-        (Positives(), 0.8, False, "scores_pos", (6, 5)),
-        (Positives(1), 0.8, False, "scores_pos", (6, 5)),
-        (Positives(0), 0.8, False, "scores_neg", (8, 7)),
-        (All(), 0.2, True, "scores", (9, 8)),
-        (Negatives(), 0.2, True, "scores_neg", (10, 9)),
-        (Negatives(0), 0.2, True, "scores_neg", (10, 9)),
-        (Negatives(1), 0.2, True, "scores_pos", (9, 8)),
-        (Positives(), 0.2, True, "scores_pos", (9, 8)),
-        (Positives(1), 0.2, True, "scores_pos", (9, 8)),
-        (Positives(0), 0.2, True, "scores_neg", (10, 9)),
+        (None, 0.8, False, "scores", (8, 7)),
+        (0, 0.8, False, "scores_neg", (8, 7)),
+        (1, 0.8, False, "scores_pos", (6, 5)),
+        (None, 0.2, True, "scores", (8, 7)),
+        (0, 0.2, True, "scores_neg", (8, 7)),
+        (1, 0.2, True, "scores_pos", (6, 5)),
     ],
 )
 class TestQuantile:
-    def test_expected(self, selector, tau, top, key, expected, request):
+    def test_expected(self, by, tau, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        threshold = Quantile(tau=tau, top=top, selector=selector)
+        y = to_numpy(fix["labels"])
+        s = to_numpy(fix["scores"])
 
-        actual = threshold.find(fix["labels"], fix["scores"])
+        actual = _find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
         assert actual == expected
 
-    def test_value(self, selector, tau, top, key, expected, request):
+    def test_value(self, by, tau, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        threshold = Quantile(tau=tau, top=top, selector=selector)
+        y = to_numpy(fix["labels"])
+        s = to_numpy(fix["scores"])
+        s_selected = to_numpy(fix[key])
 
-        actual = threshold.find(fix["labels"], fix["scores"])
-        assert actual[0] == find_quantile(to_numpy(fix[key]), tau, top)[0]
+        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)[0]
+        t2 = find_quantile(x=s_selected, tau=tau, reverse=reverse)[0]
+        assert t1 == t2
 
-    def test_negation(self, selector, tau, top, key, expected, request):
+    def test_negation(self, by, tau, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        threshold1 = Quantile(tau=tau, top=top, selector=selector)
-        threshold2 = Quantile(tau=1 - tau, top=not top, selector=selector)
+        y = to_numpy(fix["labels"])
+        s = to_numpy(fix["scores"])
 
-        t1 = threshold1.find(fix["labels"], fix["scores"])
-        t2 = threshold2.find(fix["labels"], fix["scores"])
+        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
+        t2 = _find_threshold(y=y, s=s, by=by, k_or_tau=1 - tau, reverse=not reverse)
         assert t1 == t2
