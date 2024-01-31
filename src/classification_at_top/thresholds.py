@@ -1,7 +1,10 @@
 from typing import Tuple
 
 import numpy as np
-from attrs import define, field
+import torch
+from torch import Tensor
+from torch.autograd import Function
+from torch.autograd.function import once_differentiable
 
 from .utilities import (
     ArrayLike,
@@ -108,3 +111,54 @@ def find_threshold(y: ArrayLike, s: ArrayLike, **kwargs):
 
     return t, t_ind
 
+
+class Threshold(Function):
+    @staticmethod
+    def forward(
+        y: Tensor,
+        s: Tensor,
+        by: int | None,
+        k_or_tau: int | float | None,
+        reverse: bool,
+    ):
+
+        t, t_ind = find_threshold(y, s, by=by, k_or_tau=k_or_tau, reverse=reverse)
+        t_tensor = torch.tensor(
+            t, device=s.device, dtype=s.dtype, requires_grad=s.requires_grad
+        )
+        t_ind_tensor = torch.tensor(
+            t_ind, device=s.device, dtype=int, requires_grad=False
+        )
+
+        return t_tensor, t_ind_tensor
+
+    @staticmethod
+    def setup_context(ctx, inputs, output):
+        _, s, *_ = inputs
+        _, t_ind = output
+        ctx.save_for_backward(s, t_ind)
+
+    @staticmethod
+    @once_differentiable
+    def backward(ctx, grad_output_t, grad_output_t_ind):
+        grad_s = None
+
+        if ctx.needs_input_grad[1]:
+            s, t_ind = ctx.saved_tensors
+
+            grad_t = torch.zeros_like(s)
+            grad_t[t_ind] = 1
+            grad_s = grad_output_t * grad_t
+
+        return None, grad_s, None, None, None
+
+
+def threshold(
+    y: Tensor,
+    s: Tensor,
+    by: int | None = None,
+    k_or_tau: int | float | None = None,
+    reverse: bool = True,
+):
+    t = Threshold.apply(y, s, by, k_or_tau, reverse)
+    return t
