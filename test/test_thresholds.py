@@ -1,6 +1,6 @@
 import pytest
 import torch
-from classification_at_top.thresholds import _find_threshold, threshold
+from classification_at_top.thresholds import FindThreshold, find_threshold
 from classification_at_top.utilities import (
     find_extrema,
     find_kth,
@@ -36,7 +36,7 @@ class TestExtrema:
         y = to_numpy(fix["labels"])
         s = to_numpy(fix["scores"])
 
-        actual = _find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
+        actual = find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
         assert actual == expected
 
     def test_index(self, by, reverse, key, expected, request):
@@ -44,7 +44,7 @@ class TestExtrema:
         y = to_numpy(fix["labels"])
         s = to_numpy(fix["scores"])
 
-        t, t_ind = _find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
+        t, t_ind = find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
         assert t == s[t_ind]
 
     def test_value(self, by, reverse, key, expected, request):
@@ -53,7 +53,7 @@ class TestExtrema:
         s = to_numpy(fix["scores"])
         s_selected = to_numpy(fix[key])
 
-        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)[0]
+        t1 = find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)[0]
         t2 = find_extrema(x=s_selected, reverse=reverse)[0]
         assert t1 == t2
 
@@ -62,8 +62,8 @@ class TestExtrema:
         y = to_numpy(fix["labels"])
         s = to_numpy(fix["scores"])
 
-        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
-        t2 = _find_threshold(y=y, s=s, by=by, k_or_tau=0, reverse=reverse)
+        t1 = find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
+        t2 = find_threshold(y=y, s=s, by=by, k_or_tau=0, reverse=reverse)
         assert t1 == t2
 
 
@@ -84,7 +84,7 @@ class TestKth:
         y = to_numpy(fix["labels"])
         s = to_numpy(fix["scores"])
 
-        actual = _find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
+        actual = find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
         assert actual == expected
 
     def test_index(self, by, k, reverse, key, expected, request):
@@ -92,7 +92,7 @@ class TestKth:
         y = to_numpy(fix["labels"])
         s = to_numpy(fix["scores"])
 
-        t, t_ind = _find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
+        t, t_ind = find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
         assert t == s[t_ind]
 
     def test_value(self, by, k, reverse, key, expected, request):
@@ -101,7 +101,7 @@ class TestKth:
         s = to_numpy(fix["scores"])
         s_selected = to_numpy(fix[key])
 
-        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)[0]
+        t1 = find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)[0]
         t2 = find_kth(x=s_selected, k=k, reverse=reverse)[0]
         assert t1 == t2
 
@@ -111,8 +111,8 @@ class TestKth:
         s = to_numpy(fix["scores"])
         n = len(fix[key])
 
-        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
-        t2 = _find_threshold(y=y, s=s, by=by, k_or_tau=n - k - 1, reverse=not reverse)
+        t1 = find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
+        t2 = find_threshold(y=y, s=s, by=by, k_or_tau=n - k - 1, reverse=not reverse)
         assert t1 == t2
 
 
@@ -133,7 +133,7 @@ class TestQuantile:
         y = to_numpy(fix["labels"])
         s = to_numpy(fix["scores"])
 
-        actual = _find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
+        actual = find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
         assert actual == expected
 
     def test_index(self, by, tau, reverse, key, expected, request):
@@ -141,7 +141,7 @@ class TestQuantile:
         y = to_numpy(fix["labels"])
         s = to_numpy(fix["scores"])
 
-        t, t_ind = _find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
+        t, t_ind = find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
         assert t == s[t_ind]
 
     def test_value(self, by, tau, reverse, key, expected, request):
@@ -150,7 +150,7 @@ class TestQuantile:
         s = to_numpy(fix["scores"])
         s_selected = to_numpy(fix[key])
 
-        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)[0]
+        t1 = find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)[0]
         t2 = find_quantile(x=s_selected, tau=tau, reverse=reverse)[0]
         assert t1 == t2
 
@@ -159,8 +159,8 @@ class TestQuantile:
         y = to_numpy(fix["labels"])
         s = to_numpy(fix["scores"])
 
-        t1 = _find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
-        t2 = _find_threshold(y=y, s=s, by=by, k_or_tau=1 - tau, reverse=not reverse)
+        t1 = find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
+        t2 = find_threshold(y=y, s=s, by=by, k_or_tau=1 - tau, reverse=not reverse)
         assert t1 == t2
 
 
@@ -193,4 +193,6 @@ class TestGradient:
         y = torch.tensor(fix["labels"], requires_grad=False)
         s = torch.tensor(fix["scores"], requires_grad=True, dtype=torch.float64)
 
-        assert torch.autograd.gradcheck(threshold, (y, s, by, k_or_tau, reverse))
+        assert torch.autograd.gradcheck(
+            FindThreshold.apply, (y, s, by, k_or_tau, reverse)
+        )
