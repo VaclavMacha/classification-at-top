@@ -5,8 +5,8 @@ from classification_at_top.utilities import (
     find_extrema,
     find_kth,
     find_quantile,
-    to_numpy,
 )
+from torch import tensor
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def scores_dict() -> dict:
 
 
 @pytest.mark.parametrize(
-    "by, reverse, key, expected",
+    "by, reverse, key, t, ind",
     [
         (None, False, "scores", (1, 0)),
         (0, False, "scores_neg", (3, 2)),
@@ -33,34 +33,34 @@ def scores_dict() -> dict:
 class TestExtrema:
     def test_expected(self, by, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"])
 
         actual = find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
         assert actual == expected
 
     def test_index(self, by, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"])
 
-        t, t_ind = find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
-        assert t == s[t_ind]
+        t, ind = find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
+        assert t == s[ind]
 
     def test_value(self, by, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
-        s_selected = to_numpy(fix[key])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"])
+        s_selected = tensor(fix[key])
 
-        t1 = find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)[0]
-        t2 = find_extrema(x=s_selected, reverse=reverse)[0]
-        assert t1 == t2
+        t, ind_1 = find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
+        ind_2 = find_extrema(x=s_selected, reverse=reverse)
+        assert t == s[ind_1] == s_selected[ind_2]
 
     def test_kth(self, by, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"])
 
         t1 = find_threshold(y=y, s=s, by=by, k_or_tau=None, reverse=reverse)
         t2 = find_threshold(y=y, s=s, by=by, k_or_tau=0, reverse=reverse)
@@ -81,34 +81,34 @@ class TestExtrema:
 class TestKth:
     def test_expected(self, by, k, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"])
 
         actual = find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
         assert actual == expected
 
     def test_index(self, by, k, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"])
 
-        t, t_ind = find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
-        assert t == s[t_ind]
+        t, ind = find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
+        assert t == s[ind]
 
     def test_value(self, by, k, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
-        s_selected = to_numpy(fix[key])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"])
+        s_selected = tensor(fix[key])
 
-        t1 = find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)[0]
-        t2 = find_kth(x=s_selected, k=k, reverse=reverse)[0]
-        assert t1 == t2
+        t, ind_1 = find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
+        ind_2 = find_kth(x=s_selected, k=k, reverse=reverse)
+        assert t == s[ind_1] == s_selected[ind_2]
 
     def test_negation(self, by, k, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"])
         n = len(fix[key])
 
         t1 = find_threshold(y=y, s=s, by=by, k_or_tau=k, reverse=reverse)
@@ -130,34 +130,34 @@ class TestKth:
 class TestQuantile:
     def test_expected(self, by, tau, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"], dtype=float)
 
         actual = find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
         assert actual == expected
 
     def test_index(self, by, tau, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"], dtype=float)
 
-        t, t_ind = find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
-        assert t == s[t_ind]
+        t, ind = find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
+        assert t == s[ind]
 
     def test_value(self, by, tau, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
-        s_selected = to_numpy(fix[key])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"], dtype=float)
+        s_selected = tensor(fix[key], dtype=float)
 
-        t1 = find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)[0]
-        t2 = find_quantile(x=s_selected, tau=tau, reverse=reverse)[0]
-        assert t1 == t2
+        t, ind_1 = find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
+        ind_2 = find_quantile(x=s_selected, tau=tau, reverse=reverse)
+        assert t == s[ind_1] == s_selected[ind_2]
 
     def test_negation(self, by, tau, reverse, key, expected, request):
         fix = request.getfixturevalue("scores_dict")
-        y = to_numpy(fix["labels"])
-        s = to_numpy(fix["scores"])
+        y = tensor(fix["labels"])
+        s = tensor(fix["scores"], dtype=float)
 
         t1 = find_threshold(y=y, s=s, by=by, k_or_tau=tau, reverse=reverse)
         t2 = find_threshold(y=y, s=s, by=by, k_or_tau=1 - tau, reverse=not reverse)
@@ -188,11 +188,18 @@ class TestQuantile:
     ],
 )
 class TestGradient:
-    def test_expected(self, by, k_or_tau, reverse, request):
+    def test_apply(self, by, k_or_tau, reverse, request):
         fix = request.getfixturevalue("scores_dict")
-        y = torch.tensor(fix["labels"], requires_grad=False)
-        s = torch.tensor(fix["scores"], requires_grad=True, dtype=torch.float64)
+        y = tensor(fix["labels"], requires_grad=False)
+        s = tensor(fix["scores"], requires_grad=True, dtype=torch.float64)
 
         assert torch.autograd.gradcheck(
             FindThreshold.apply, (y, s, by, k_or_tau, reverse)
         )
+
+    def test_expected(self, by, k_or_tau, reverse, request):
+        fix = request.getfixturevalue("scores_dict")
+        y = tensor(fix["labels"], requires_grad=False)
+        s = tensor(fix["scores"], requires_grad=True, dtype=torch.float64)
+
+        assert torch.autograd.gradcheck(find_threshold, (y, s, by, k_or_tau, reverse))

@@ -1,103 +1,65 @@
-from typing import Iterable, Tuple, Union
-
-import numpy as np
 import torch
-
-ArrayLike = Union[np.ndarray, torch.Tensor, Iterable]
-Number = Union[int, float]
+from torch import Tensor
 
 
-def to_numpy(x: ArrayLike) -> np.ndarray:
+def find_extrema(x: Tensor, reverse: bool = True) -> Tensor:
     """
-    Converts an array-like object to a numpy array.
+    Finds the index of the largest/smallest value in the given tensor.
 
     Args:
-        x (ArrayLike): The input array-like object.
+        x (torch.Tensor): The input tensor.
+        reverse (bool): If True, finds the largest value. If False, finds the smallest value. Defaults to True.
 
     Returns:
-        np.ndarray: The resulting numpy array.
-
-    Raises:
-        ValueError: If the input type is not an array-like object.
-    """
-    if not isinstance(x, ArrayLike):
-        raise ValueError(f"Invalid input type. Expected {ArrayLike}")
-
-    if isinstance(x, torch.Tensor):
-        return x.detach().cpu().numpy()
-    else:
-        return np.array(x)
-
-
-def find_extrema(x: np.ndarray, reverse: bool = False) -> Tuple[Number, int]:
-    """
-    Finds the minimum/maximum value and its index in the given array.
-
-    Args:
-        x (np.ndarray): The input array.
-        reverse (bool): If True, finds the largest element. If False, finds the smallest element. Defaults to False.
-
-    Returns:
-        Tuple[Number, int]: A tuple containing the maximum value and its index.
+        Tensor: The index of the largest/smallest value in the given tensor.
     """
     if reverse:
-        ind = np.argmax(x)
+        return x.argmax()
     else:
-        ind = np.argmin(x)
-
-    return x[ind], ind
+        return x.argmin()
 
 
-def find_kth(x: np.ndarray, k: int, reverse: bool = False) -> Tuple[Number, int]:
+def find_kth(x: Tensor, k: int, reverse: bool = True) -> Tensor:
     """
-    Finds the k-th smallest or largest element and its index in the given array.
+    Finds the index of the k-th largest/smallest value in the given tensor.
 
     Args:
-        x (np.ndarray): The input array.
+        x (torch.Tensor): The input tensor.
         k (int): The index of the element to find.
-        reverse (bool): If True, finds the k-th largest element. If False, finds the k-th
-            smallest element. Defaults to False.
+        reverse (bool): If True, finds the k-th largest value. If False, finds the k-th smallest value. Defaults to True.
 
     Returns:
-        Tuple[Number, int]: A tuple containing the k-th element and its index.
+        Tensor: The index of the k-th largest/smallest value in the given tensor.
 
     Raises:
         ValueError: If k is out of range.
     """
-    if k < 0 or k > x.size:
-        raise ValueError(f"Invalid k. Expected 0 <= k < {x.size}, but got {k}")
 
     if k == 0:
         return find_extrema(x, reverse)
-
-    if reverse:
-        ind = np.argpartition(-x, k)[k]
+    elif k > 0 and k < len(x):
+        return x.argsort(descending=reverse)[k]
     else:
-        ind = np.argpartition(x, k)[k]
-    return x[ind], ind
+        raise ValueError(f"Invalid k. Expected 0 <= k < {x.size}, but got {k}")
 
 
-def find_quantile(
-    x: np.ndarray, tau: float, reverse: bool = False
-) -> Tuple[Number, int]:
+def find_quantile(x: Tensor, tau: float, reverse: bool = True) -> Tensor:
     """
-    Finds the tau-quantile and its index of the given array.
+    Finds the index of the top/bottom tau-quantile value in the given tensor.
 
     Args:
-        x (np.ndarray): The input array.
-        tau (float): The quantile value between 0 and 1.
-        reverse (bool): If True, finds the quantile from the top of the array. If False,
-            finds the quantile from the bottom. Defaults to False.
+        x (torch.Tensor): The input tensor.
+        k (int): The index of the element to find.
+        reverse (bool): If True, finds the top tau-quantile. If False, the bottom tau-quantile. Defaults to True.
 
     Returns:
-        Tuple[Number, int]: A tuple containing the quantile value and its index.
+        Tensor: The index of the top/bottom tau-quantile value in the given tensor.
 
     Raises:
         ValueError: If tau is out of range.
     """
-    if 0 > tau or tau > 1:
-        raise ValueError(f"Invalid quantile. Expected 0 <= tau <= 1, but got {tau}")
+    if not 0 < tau < 1:
+        raise ValueError(f"Invalid quantile. Expected 0 < tau < 1, but got {tau=}")
 
-    t = np.quantile(x, 1 - tau if reverse else tau)
-    ind = (np.abs(x - t)).argmin()
-    return x[ind], ind
+    t = x.quantile(1 - tau if reverse else tau)
+    return (torch.abs(x - t)).argmin()
