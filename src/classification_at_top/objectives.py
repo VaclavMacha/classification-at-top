@@ -99,11 +99,11 @@ class ClassificationAtTopObjective(Module):
 
 @define(frozen=False)
 class DeepTopPush(ClassificationAtTopObjective):
-    def __init__(self, surrogate: str = "hinge"):
+    def __init__(self, surrogate: str = "hinge", k: int = None):
         super().__init__(
             alpha=1,
             by=0,
-            k_or_tau=None,
+            k_or_tau=k,
             reverse=True,
             surrogate=surrogate,
         )
