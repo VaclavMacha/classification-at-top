@@ -1,52 +1,12 @@
 import random
-from inspect import cleandoc
 from math import ceil
-from typing import Iterable, Iterator, List, Union
+from typing import Iterator, List
 
 import torch
 from torch import Tensor
-from torch.utils.data import BatchSampler, Sampler
+from torch.utils.data import Sampler
 
 from .objectives import ClassificationAtTopObjective
-
-
-class ClassificationAtTopBatchSampler(BatchSampler):
-    def __init__(
-        self,
-        sampler: Union[Sampler[int], Iterable[int]],
-        batch_size: int,
-        objective: ClassificationAtTopObjective,
-    ) -> None:
-        super().__init__(sampler, batch_size, False)
-
-        if not isinstance(objective, ClassificationAtTopObjective):
-            raise ValueError(
-                cleandoc(
-                    f"""Objective should be an instance of ClassificationAtTopObjective, but got objective={type(objective)=}
-                    """
-                )
-            )
-        self.objective = objective
-
-    def _add_threshold_ind(self, batch: List[int]) -> List[int]:
-        _, t_ind = self.objective.threshold()
-        if t_ind is not None and t_ind not in batch:
-            ind = random.randint(0, len(batch) - 1)
-            batch[ind] = t_ind.item()
-        return batch
-
-    def __iter__(self) -> Iterator[List[int]]:
-        batch = [0] * self.batch_size
-        idx_in_batch = 0
-        for idx in self.sampler:
-            batch[idx_in_batch] = idx
-            idx_in_batch += 1
-            if idx_in_batch == self.batch_size:
-                yield self._add_threshold_ind(batch)
-                idx_in_batch = 0
-                batch = [0] * self.batch_size
-        if idx_in_batch > 0:
-            yield self._add_threshold_ind(batch[:idx_in_batch])
 
 
 class StratifiedRandomSampler(Sampler[List[int]]):
