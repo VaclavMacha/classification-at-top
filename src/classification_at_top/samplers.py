@@ -57,14 +57,15 @@ class StratifiedRandomSampler(Sampler[List[int]]):
         batch_size_neg: int,
         batch_size_pos: int,
         objective: ClassificationAtTopObjective | None = None,
+        max_iters: int | None = None,
     ) -> None:
-
         self.batch_size_neg = batch_size_neg
         self.batch_size_pos = batch_size_pos
         self.inds_neg = torch.where(targets != pos_label)[0].tolist()
         self.inds_pos = torch.where(targets == pos_label)[0].tolist()
         self.n_samples = len(targets)
         self.objective = objective
+        self.max_iters = max_iters
 
     @staticmethod
     def _sample(inds: List[int], k: int) -> List[int]:
@@ -88,6 +89,9 @@ class StratifiedRandomSampler(Sampler[List[int]]):
         return batch
 
     def __len__(self):
+        if self.max_iters is not None:
+            return self.max_iters
+
         return ceil(self.n_samples / (self.batch_size_neg + self.batch_size_pos))
 
     def __iter__(self):
