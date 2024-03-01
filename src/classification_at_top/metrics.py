@@ -27,7 +27,13 @@ def false_negatives(cm: BinaryConfusionMatrix) -> int:
 
 
 def true_negative_rate(cm: BinaryConfusionMatrix) -> float:
-    return true_negatives(cm) / negatives(cm)
+    numerator = true_negatives(cm)
+    denominator = negatives(cm)
+
+    if denominator == 0:
+        return 0
+    else:
+        return numerator / denominator
 
 
 def false_positive_rate(cm: BinaryConfusionMatrix) -> float:
@@ -35,7 +41,13 @@ def false_positive_rate(cm: BinaryConfusionMatrix) -> float:
 
 
 def true_positive_rate(cm: BinaryConfusionMatrix) -> float:
-    return true_positives(cm) / positives(cm)
+    numerator = true_positives(cm)
+    denominator = positives(cm)
+
+    if denominator == 0:
+        return 0
+    else:
+        return numerator / denominator
 
 
 def false_negative_rate(cm: BinaryConfusionMatrix) -> float:
