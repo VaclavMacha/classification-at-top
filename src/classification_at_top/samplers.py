@@ -6,8 +6,6 @@ import torch
 from torch import Tensor
 from torch.utils.data import Sampler
 
-from .objectives import ClassificationAtTopObjective
-
 
 class StratifiedRandomSampler(Sampler[List[int]]):
     def __init__(
@@ -16,7 +14,7 @@ class StratifiedRandomSampler(Sampler[List[int]]):
         pos_label: int,
         batch_size_neg: int,
         batch_size_pos: int,
-        objective: ClassificationAtTopObjective | None = None,
+        objective: torch.nn.Module | None = None,
         max_iters: int | None = None,
     ) -> None:
         self.batch_size_neg = batch_size_neg
@@ -40,8 +38,9 @@ class StratifiedRandomSampler(Sampler[List[int]]):
             *self._sample(self.inds_pos, k=self.batch_size_pos),
         ]
 
-        if self.objective is None:
-            _, t_ind = self.objective.threshold()
+        obj = self.objective
+        if obj is not None and getattr(obj, "threshold", None) is not None:
+            _, t_ind = obj.threshold()
             if t_ind is not None and t_ind not in batch:
                 ind = random.randint(0, len(batch) - 1)
                 batch[ind] = t_ind.item()
