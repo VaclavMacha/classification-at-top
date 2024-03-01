@@ -43,7 +43,13 @@ def false_negative_rate(cm: BinaryConfusionMatrix) -> float:
 
 
 def accuracy(cm: BinaryConfusionMatrix) -> float:
-    return (true_positives(cm) + true_negatives(cm)) / cm.compute().sum().item()
+    numerator = true_positives(cm) + true_negatives(cm)
+    denominator = cm.compute().sum().item()
+
+    if denominator == 0:
+        return 0
+    else:
+        return numerator / denominator
 
 
 def balanced_accuracy(cm: BinaryConfusionMatrix) -> float:
@@ -55,4 +61,10 @@ def positives_at_top(targets: Tensor, scores: Tensor) -> int:
 
 
 def positive_rate_at_top(targets: Tensor, scores: Tensor) -> int:
-    return positives_at_top(targets, scores) / (targets == 1).sum().item()
+    numerator = positives_at_top(targets, scores)
+    denominator = (targets == 1).sum().item()
+
+    if denominator == 0:
+        return 0
+    else:
+        return numerator / denominator
