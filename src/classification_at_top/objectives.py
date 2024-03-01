@@ -62,13 +62,33 @@ class ClassificationAtTopObjective(Module):
         self._t = None
         self._t_ind = None
 
+    def state_dict(self, *args, **kwargs):
+        state = super().state_dict(*args, **kwargs)
+        t, ind = self.threshold(save=False)
+        if t is not None:
+            t = t.detach().cpu().item()
+            ind = ind.detach().cpu().item()
+
+        state.update({"threshold": t, "threshold_index": ind})
+        return state
+
+    def load_state_dict(self, state, *args, **kwargs):
+        t = state.pop("threshold", None)
+        ind = state.pop("threshold_index", None)
+
+        if t is not None:
+            self._t = torch.tensor(t)
+            self._t_ind = torch.tensor(ind)
+
+        super().load_state_dict(state, *args, **kwargs)
+        return
+
     def threshold(
         self,
         y: Tensor | None = None,
         s: Tensor | None = None,
         save: bool = False,
     ) -> tuple[Tensor, Tensor]:
-
         if y is None or s is None:
             return self._t, self._t_ind
 
