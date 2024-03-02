@@ -12,11 +12,21 @@ class StratifiedRandomSampler(Sampler[List[int]]):
         self,
         targets: Tensor,
         pos_label: int,
-        batch_size_neg: int,
-        batch_size_pos: int,
+        batch_size_neg: int | None = None,
+        batch_size_pos: int | None = None,
         objective: torch.nn.Module | None = None,
         max_iters: int | None = None,
     ) -> None:
+        if self.batch_size_neg is None and self.batch_size_pos is not None:
+            raise ValueError(
+                "batch_size_neg must be specified if batch_size_pos is specified"
+            )
+
+        if self.batch_size_neg is not None and self.batch_size_pos is None:
+            raise ValueError(
+                "batch_size_pos must be specified if batch_size_neg is specified"
+            )
+
         self.batch_size_neg = batch_size_neg
         self.batch_size_pos = batch_size_pos
         self.inds_neg = torch.where(targets != pos_label)[0].tolist()
@@ -33,6 +43,9 @@ class StratifiedRandomSampler(Sampler[List[int]]):
             return random.sample(inds, k=k)
 
     def _generate_batch(self) -> Iterator[List[int]]:
+        if self.batch_size_neg is None and self.batch_size_pos is None:
+            raise [*self.inds_neg, *self.inds_pos]
+
         batch = [
             *self._sample(self.inds_neg, k=self.batch_size_neg),
             *self._sample(self.inds_pos, k=self.batch_size_pos),
