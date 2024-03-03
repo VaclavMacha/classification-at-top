@@ -44,7 +44,7 @@ class StratifiedRandomSampler(Sampler[List[int]]):
 
     def _generate_batch(self) -> Iterator[List[int]]:
         if self.batch_size_neg is None and self.batch_size_pos is None:
-            raise [*self.inds_neg, *self.inds_pos]
+            return [*self.inds_neg, *self.inds_pos]
 
         batch = [
             *self._sample(self.inds_neg, k=self.batch_size_neg),
