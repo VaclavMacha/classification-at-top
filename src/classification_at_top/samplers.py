@@ -17,12 +17,12 @@ class StratifiedRandomSampler(Sampler[List[int]]):
         objective: torch.nn.Module | None = None,
         max_iters: int | None = None,
     ) -> None:
-        if self.batch_size_neg is None and self.batch_size_pos is not None:
+        if batch_size_neg is None and batch_size_pos is not None:
             raise ValueError(
                 "batch_size_neg must be specified if batch_size_pos is specified"
             )
 
-        if self.batch_size_neg is not None and self.batch_size_pos is None:
+        if batch_size_neg is not None and batch_size_pos is None:
             raise ValueError(
                 "batch_size_pos must be specified if batch_size_neg is specified"
             )
