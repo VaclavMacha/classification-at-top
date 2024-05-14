@@ -1,6 +1,9 @@
 import pytest
 import torch
-from classification_at_top.objectives import hinge, quadratic_hinge
+from classification_at_top.objectives import (
+    hinge,
+    quadratic_hinge,
+)
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,9 @@
 import pytest
 import torch
-from classification_at_top.thresholds import FindThreshold, find_threshold
+from classification_at_top.thresholds import (
+    FindThreshold,
+    find_threshold,
+)
 from classification_at_top.utilities import (
     find_extrema,
     find_kth,
