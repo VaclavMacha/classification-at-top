@@ -40,7 +40,7 @@ def find_kth(x: Tensor, k: int, reverse: bool = True) -> Tensor:
     elif k > 0 and k < len(x):
         return x.argsort(descending=reverse)[k]
     else:
-        raise ValueError(f"Invalid k. Expected 0 <= k < {x.size}, but got {k}")
+        raise ValueError(f"Invalid k. Expected 0 <= k < {len(x)}, but got {k}")
 
 
 def find_quantile(x: Tensor, tau: float, reverse: bool = True) -> Tensor:
