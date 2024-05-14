@@ -1,7 +1,6 @@
 from typing import Union
 
 import torch
-from attrs import converters, define, field, validators
 from torch import Tensor
 from torch.nn import Module
 
@@ -24,41 +23,37 @@ SURROGATES = {
 }
 
 
-@define(frozen=False)
 class ClassificationAtTopObjective(Module):
-    alpha: float = field(
-        converter=float,
-        validator=[
-            validators.instance_of(Number),
-            validators.ge(0),
-            validators.le(1),
-        ],
-    )
-    by: int | None = field(
-        converter=converters.optional(int),
-        validator=validators.optional(
-            [
-                validators.instance_of(int),
-                validators.in_([0, 1]),
-            ]
-        ),
-    )
-    k_or_tau: Number | None = field(
-        validator=validators.optional(validators.instance_of(Number)),
-    )
-    reverse: bool = field(
-        validator=validators.instance_of(bool),
-    )
-    surrogate: str = field(
-        default="hinge",
-        validator=[
-            validators.instance_of(str),
-            validators.in_(["hinge", "quadratic_hinge"]),
-        ],
-    )
-
-    def __attrs_pre_init__(self):
+    def __init__(
+        self,
+        alpha: float,
+        by: int | None,
+        k_or_tau: Number | None,
+        reverse: bool,
+        surrogate: str,
+    ):
         super().__init__()
+
+        if not 0 <= alpha <= 1:
+            raise ValueError(f"alpha must be in [0, 1], got {alpha}")
+        self.alpha = alpha
+
+        if by is not None and by not in [0, 1]:
+            raise ValueError(f"by must be 0 or 1, got {by}")
+        self.by = by
+
+        if k_or_tau is not None:
+            if isinstance(k_or_tau, int) and not k_or_tau >= 1:
+                raise ValueError(f"k must be positive >= 1, got {k_or_tau}")
+
+            if isinstance(k_or_tau, float) and not 0 < k_or_tau < 1:
+                raise ValueError(f"tau must be in (0, 1), got {k_or_tau}")
+        self.k_or_tau = k_or_tau
+        self.reverse = reverse
+
+        if surrogate not in SURROGATES:
+            raise ValueError(f"surrogate must be one of {list(SURROGATES.keys())}")
+        self.surrogate = surrogate
         self._t = None
         self._t_ind = None
 
@@ -85,14 +80,23 @@ class ClassificationAtTopObjective(Module):
 
     def threshold(
         self,
-        y: Tensor | None = None,
         s: Tensor | None = None,
+        y: Tensor | None = None,
         save: bool = False,
     ) -> tuple[Tensor, Tensor]:
         if y is None or s is None:
             return self._t, self._t_ind
 
-        t, ind = find_threshold(y, s, self.by, self.k_or_tau, self.reverse)
+        if len(y) == 0:
+            return self._t, self._t_ind
+
+        t, ind = find_threshold(
+            y=torch.flatten(y),
+            s=torch.flatten(s),
+            by=self.by,
+            k_or_tau=self.k_or_tau,
+            reverse=self.reverse,
+        )
 
         if save:
             self._t = t.detach().cpu()
@@ -101,7 +105,7 @@ class ClassificationAtTopObjective(Module):
         return t, ind
 
     def forward(self, s: Tensor, y: Tensor) -> Tensor:
-        t, _ = self.threshold(y, s, save=self.training)
+        t, _ = self.threshold(s, y, save=self.training)
 
         # false-negative rate
         alpha = self.alpha
@@ -117,7 +121,6 @@ class ClassificationAtTopObjective(Module):
         return s >= t
 
 
-@define(frozen=False)
 class DeepTopPush(ClassificationAtTopObjective):
     def __init__(self, surrogate: str = "hinge", k: int = None):
         super().__init__(
@@ -133,7 +136,6 @@ class DeepTopPush(ClassificationAtTopObjective):
         return f"DeepTopPush({surrogate=})"
 
 
-@define(frozen=False)
 class PatMat(ClassificationAtTopObjective):
     def __init__(self, tau: float, surrogate: str = "hinge"):
         super().__init__(
@@ -150,7 +152,6 @@ class PatMat(ClassificationAtTopObjective):
         return f"PatMat({tau=}, {surrogate=})"
 
 
-@define(frozen=False)
 class PatMatNP(ClassificationAtTopObjective):
     def __init__(self, tau: float, surrogate: str = "hinge"):
         super().__init__(

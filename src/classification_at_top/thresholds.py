@@ -17,7 +17,6 @@ class FindThreshold(Function):
         k_or_tau: int | float | None,
         reverse: bool,
     ):
-
         if not y.dim() == s.dim() == 1:
             raise ValueError(
                 f"Expected y and s to be 1-dimensional: {y.shape=}, {s.shape=}"

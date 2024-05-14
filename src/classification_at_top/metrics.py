@@ -68,12 +68,17 @@ def balanced_accuracy(cm: BinaryConfusionMatrix) -> float:
     return (true_negative_rate(cm) + true_positive_rate(cm)) / 2
 
 
-def positives_at_top(targets: Tensor, scores: Tensor) -> int:
-    return (scores[targets == 1] >= scores[targets == 0].max()).sum().item()
+def positives_at_top(scores: Tensor, targets: Tensor) -> int:
+    s_pos = scores[targets == 1]
+    s_neg = scores[targets == 0]
+
+    if len(s_pos) == 0 or len(s_neg) == 0:
+        return 0
+    return (s_pos > s_neg.max()).sum().item()
 
 
-def positive_rate_at_top(targets: Tensor, scores: Tensor) -> int:
-    numerator = positives_at_top(targets, scores)
+def positive_rate_at_top(scores: Tensor, targets: Tensor) -> int:
+    numerator = positives_at_top(scores, targets)
     denominator = (targets == 1).sum().item()
 
     if denominator == 0:
